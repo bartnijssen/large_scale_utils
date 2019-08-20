@@ -29,7 +29,6 @@ def process_command_line():
 if __name__ == '__main__':
     # process command line
     args = process_command_line()
-    print(args)
 
     # read the IDs to subset
     with open(args.idfile) as f:
