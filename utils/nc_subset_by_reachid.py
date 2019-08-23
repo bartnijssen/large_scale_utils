@@ -48,6 +48,10 @@ if __name__ == '__main__':
     if (args.hru):
         ds_subset = ds_subset.merge(ds_org.drop_dims('seg'))
 
+    # make sure that the subsetted types are the same as the original ones
+    for var in ds_subset.variables:
+        ds_subset[var] = ds_subset[var].astype(ds[var].dtype)
+
     # update the history attribute
     history = '{}: {}\n'.format(datetime.now().strftime('%c'), 
                                 ' '.join(sys.argv))
@@ -55,6 +59,7 @@ if __name__ == '__main__':
         ds_subset.attrs['history'] = history + ds_subset.attrs['history']
     else:
         ds_subset.attrs['history'] = history
+
 
     # Write to file
     ofile = os.path.join(args.opath, os.path.basename(args.ncfile))
