@@ -19,6 +19,9 @@ def process_command_line():
                         help='path of file with list of ids.')
     parser.add_argument('ofile',
                         help='path of subsetted output file.')
+    parser.add_argument('-d', '--drop', action='store_true', default=False, 
+                        help=('drop the variables that are not associated with the same dimension(s) '
+                              'as the ID used in subsetting'))
     args = parser.parse_args()
     return(args)
 
@@ -51,8 +54,9 @@ if __name__ == '__main__':
     ds_with = ds[vars_with]
     ds_subset = ds_with.where(ds_with[args.id].isin(ids), drop=True)
 
-    # merge the with and without
-    ds_subset = ds_subset.merge(ds[vars_without])
+    if not args.drop:
+        # merge the with and without
+        ds_subset = ds_subset.merge(ds[vars_without])
 
     # make sure that the subsetted types are the same as the original ones
     for var in ds_subset.variables:
