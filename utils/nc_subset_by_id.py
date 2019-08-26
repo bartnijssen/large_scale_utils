@@ -17,8 +17,8 @@ def process_command_line():
                         help='path of netcdf file that will be subset.')
     parser.add_argument('idfile', 
                         help='path of file with list of ids.')
-    parser.add_argument('opath',
-                        help='directory where subsetted file will be written.')
+    parser.add_argument('ofile',
+                        help='path of subsetted output file.')
     args = parser.parse_args()
     return(args)
 
@@ -67,8 +67,7 @@ if __name__ == '__main__':
         ds_subset.attrs['history'] = history
 
     # Write to file
-    ofile = os.path.join(args.opath, os.path.basename(args.ncfile))
-    ds_subset.to_netcdf(ofile)
+    ds_subset.to_netcdf(args.ofile)
 
     # Write IDs from the ID file that were not in the NetCDF file to stdout
     missing = set(ids).difference(set(ds_subset[args.id].values))
