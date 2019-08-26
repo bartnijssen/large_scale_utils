@@ -11,6 +11,8 @@ import xarray as xr
 def process_command_line():
     '''Parse the commandline'''
     parser = argparse.ArgumentParser(description='Script to subset a netcdf file based on a list of IDs.')
+    parser.add_argument('id',
+                        help='variable ID to subset on (e.g. \'hruId\')')
     parser.add_argument('ncfile',
                         help='path of netcdf file that will be subset.')
     parser.add_argument('idfile', 
@@ -30,16 +32,16 @@ if __name__ == '__main__':
     with open(args.idfile) as f:
         ids = [int(x) for x in f]
 
-    # subset dimension
-    subset_dim = 'hru'
-
     # ingest the netcdf file
     ds = xr.open_dataset(args.ncfile)
+
+    # subset dimension
+    subset_dim = list(ds[args.id].dims)
 
     # determine which variables do not vary along any of the subsetted dimensions
     vars_without = []
     for var in ds.variables:
-        if not subset_dim in ds[var].dims:
+        if not set(subset_dim).intersection(ds[var].dims):
             vars_without.append(var)
 
     # take the other variables
@@ -47,7 +49,7 @@ if __name__ == '__main__':
 
     # subset the netcdf file based on the hruId
     ds_with = ds[vars_with]
-    ds_subset = ds_with.where(ds_with.hruId.isin(ids), drop=True)
+    ds_subset = ds_with.where(ds_with[args.id].isin(ids), drop=True)
 
     # merge the with and without
     ds_subset = ds_subset.merge(ds[vars_without])
@@ -69,7 +71,7 @@ if __name__ == '__main__':
     ds_subset.to_netcdf(ofile)
 
     # Write IDs from the ID file that were not in the NetCDF file to stdout
-    missing = set(ids).difference(set(ds_subset.hruId.values))
+    missing = set(ids).difference(set(ds_subset[args.id].values))
     if missing:
         print("Missing IDs: ")
         for x in missing:
